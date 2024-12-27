@@ -21,8 +21,10 @@ export const handler = async () => {
     const timeAgo = new Date(
       Date.now() - calculateTimeRange(SCHEDULED_VALUE, SCHEDULED_UNIT)
     );
+
     const newItems = filterNewItems(items, timeAgo);
     const keywordItems = filterItemsByKeywords(newItems, KEYWORDS);
+
     if (keywordItems.length > 0) {
       const message = keywordItems
         .map((item) => item.querySelector("title")!.textContent)
@@ -47,18 +49,26 @@ const calculateTimeRange = (value: number, unit: string): number => {
     case "days":
       return value * 24 * 60 * 60 * 1000;
     default:
-      throw new Error("Unsupported time unit: ${unit}");
+      throw new Error(`Unsupported time unit: ${unit}`);
   }
+};
+
+// RSS 1.0 と 2.0 で"公開日"の要素名が異なる
+const parsePubDate = (item: Element): Date | null => {
+  const dateText =
+    item.querySelector("pubDate")?.textContent ||
+    item.querySelector("dc\\:date")?.textContent;
+  return dateText ? new Date(dateText) : null;
 };
 
 const filterNewItems = (items: NodeListOf<Element>, timeAgo: Date) =>
   Array.from(items).filter((item) => {
-    const pubDate = new Date(item.querySelector("pubDate")!.textContent!);
-    return pubDate > timeAgo;
+    const pubDate = parsePubDate(item);
+    return pubDate !== null && pubDate > timeAgo;
   });
 
 const filterItemsByKeywords = (items: Element[], keywords: string[]) =>
   items.filter((item) => {
-    const title = item.querySelector("title")!.textContent!;
+    const title = item.querySelector("title")?.textContent || "";
     return keywords.some((keyword) => title.includes(keyword));
   });
