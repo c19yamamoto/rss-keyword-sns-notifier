@@ -4,6 +4,7 @@ import * as events from "aws-cdk-lib/aws-events";
 import * as targets from "aws-cdk-lib/aws-events-targets";
 import * as sns from "aws-cdk-lib/aws-sns";
 import { Construct } from "constructs";
+
 export class RssMonitorLambdaStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
@@ -16,20 +17,25 @@ export class RssMonitorLambdaStack extends cdk.Stack {
       handler: "rss_monitor.handler",
       environment: {
         SNS_TOPIC_ARN: topic.topicArn,
+        RSS_FEED_URL: process.env.RSS_FEED_URL!,
+        KEYWORDS: process.env.KEYWORDS!,
+        SCHEDULED_VALUE: process.env.SCHEDULED_VALUE!,
+        SCHEDULED_UNIT: process.env.SCHEDULED_UNIT!,
       },
     });
 
+    // SNSトピックにパブリッシュする権限を付与
     topic.grantPublish(handler);
 
     // スケジュール設定
     const SCHEDULED_VALUE = process.env.SCHEDULED_VALUE!;
     const SCHEDULED_UNIT = process.env.SCHEDULED_UNIT!;
-
     const scheduleFunction = scheduleUnits[SCHEDULED_UNIT];
 
     if (!scheduleFunction) {
       throw new Error(`Unsupported schedule unit: ${SCHEDULED_UNIT}`);
     }
+
     const schedule = events.Schedule.rate(
       scheduleFunction(parseInt(SCHEDULED_VALUE))
     );
