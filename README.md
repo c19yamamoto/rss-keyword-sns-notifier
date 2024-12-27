@@ -1,14 +1,22 @@
-# Welcome to your CDK TypeScript project
+# RSS Keyword SNS Notifier
 
-This is a blank project for CDK development with TypeScript.
+RSS フィードに指定したキーワードが含まれる記事が配信されたとき、SNS に通知する仕組み。<br>
+`.env` ファイルに RSS フィード、キーワードを記述し、Lambda で定期実行することで実現。<br>
+定期実行時間の変更も可能 (デフォルトは1時間)。
 
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
+## Architecture
+EventBridge で Lambda 関数を定期実行して RSS フィードを取得し、キーワードが含まれる記事があれば SNS に通知
+```mermaid
+architecture-beta
+    group api[AWS]
+    service eventbridge(logos:aws-eventbridge)[EventBridge] in api
+    service sns(logos:aws-sns)[Notification] in api
+    service lambda(logos:aws-lambda)[Compute] in api
 
-## Useful commands
+    eventbridge:R --> L:lambda
+    lambda:R --> L:sns
+```
 
-* `npm run build`   compile typescript to js
-* `npm run watch`   watch for changes and compile
-* `npm run test`    perform the jest unit tests
-* `npx cdk deploy`  deploy this stack to your default AWS account/region
-* `npx cdk diff`    compare deployed stack with current state
-* `npx cdk synth`   emits the synthesized CloudFormation template
+## スクリプト
+
+[rss-monitor-check-keyword.ts](./lambda/rss-monitor-check-keyword.ts) : RSS フィードを取得し、キーワードが含まれる記事があれば SNS に通知する Lambda 関数
