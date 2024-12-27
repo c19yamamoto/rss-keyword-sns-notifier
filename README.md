@@ -52,20 +52,21 @@ $ cdk deploy
 EventBridge で Lambda 関数を定期実行して RSS フィードを取得し、キーワードが含まれる記事があれば SNS に通知する。
 
 <div align="center">
-<image src="https://github.com/user-attachments/assets/cbe28b8b-7b6c-467f-bf19-aa43c2f71cf0" width="600px">
+<image src="https://github.com/user-attachments/assets/72f4c375-7b27-44c6-bbbd-4d47c1e01bbe" width="600px">
 </image>
 </div>
 
-<!--
 
-```mermaid
+<!-- ```mermaid
 architecture-beta
     group api[AWS]
     service eventbridge(logos:aws-eventbridge)[EventBridge] in api
-    service sns(logos:aws-sns)[Notification] in api
-    service lambda(logos:aws-lambda)[Compute] in api
-```
--->
+    service sns(logos:aws-sns)[SNS] in api
+    service lambda(logos:aws-lambda)[Lambda] in api
+
+    eventbridge:R -- L:lambda
+    lambda:R -- L:sns
+``` -->
 
 ## スクリプト
 
