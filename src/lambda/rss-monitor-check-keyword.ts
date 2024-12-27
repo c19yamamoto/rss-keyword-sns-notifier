@@ -1,5 +1,7 @@
 import { SNSClient, PublishCommand } from "@aws-sdk/client-sns";
 import fetch from "node-fetch";
+import { DOMParser } from "xmldom";
+import dayjs from "dayjs";
 
 const sns = new SNSClient({ region: "ap-northeast-1" });
 
@@ -15,7 +17,7 @@ export const handler = async () => {
     const text = await response.text();
     const parser = new DOMParser();
     const rssDoc = parser.parseFromString(text, "text/xml");
-    const items = rssDoc.querySelectorAll("item");
+    const items = rssDoc.getElementsByTagName("item");
 
     // 現在の時間から指定された範囲前の時間を計算
     const timeAgo = new Date(
@@ -44,8 +46,8 @@ const createMessage = (items: Element[], keywords?: string[]): string => {
       : items;
   return filteredItems
     .map((item) => {
-      const title = item.querySelector("title")!.textContent;
-      const link = item.querySelector("link")!.textContent;
+      const title = item.getElementsByTagName("title")[0].textContent;
+      const link = item.getElementsByTagName("link")[0].textContent;
       return `${title}\n${link}`;
     })
     .join("\n\n");
@@ -66,14 +68,20 @@ const calculateTimeRange = (value: number, unit: string): number => {
 
 const parsePubDate = (item: Element): Date | null => {
   const dateText =
-    item.querySelector("pubDate")?.textContent ||
-    item.querySelector("dc\\:date")?.textContent;
-  return dateText ? new Date(dateText) : null;
+    item.getElementsByTagName("pubDate")[0]?.textContent ||
+    item.getElementsByTagName("dc:date")[0]?.textContent;
+
+  const date = dayjs(dateText, [
+    "YYYY-MM-DDTHH:mm:ssZ",
+    "YYYY-M-DTHH:mm:ssZ",
+  ]).toDate();
+  return date;
 };
 
-const filterNewItems = (items: NodeListOf<Element>, timeAgo: Date) =>
+const filterNewItems = (items: HTMLCollectionOf<Element>, timeAgo: Date) =>
   Array.from(items).filter((item) => {
     const pubDate = parsePubDate(item);
+    console.log("pubDate:", pubDate);
     return pubDate !== null && pubDate > timeAgo;
   });
 
