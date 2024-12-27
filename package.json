@@ -23,6 +23,7 @@
     "@types/node-fetch": "^2.6.12",
     "aws-cdk-lib": "^2.173.3",
     "constructs": "^10.0.0",
+    "dotenv": "^16.4.7",
     "node-fetch": "^3.3.2"
   }
 }

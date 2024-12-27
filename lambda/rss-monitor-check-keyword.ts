@@ -5,7 +5,7 @@ const sns = new SNSClient({ region: "ap-northeast-1" });
 
 const RSS_FEED_URL = process.env.RSS_FEED_URL!;
 const SNS_TOPIC_ARN = process.env.SNS_TOPIC_ARN!;
-const KEYWORDS = process.env.KEYWORDS!.split(",");
+const KEYWORDS = process.env.KEYWORDS?.split(",");
 const SCHEDULED_VALUE = Number(process.env.SCHEDULED_VALUE);
 const SCHEDULED_UNIT = process.env.SCHEDULED_UNIT!;
 
@@ -23,12 +23,9 @@ export const handler = async () => {
     );
 
     const newItems = filterNewItems(items, timeAgo);
-    const keywordItems = filterItemsByKeywords(newItems, KEYWORDS);
+    const message = createMessage(newItems, KEYWORDS);
 
-    if (keywordItems.length > 0) {
-      const message = keywordItems
-        .map((item) => item.querySelector("title")!.textContent)
-        .join("\n");
+    if (message) {
       const command = new PublishCommand({
         Message: message,
         TopicArn: SNS_TOPIC_ARN,
@@ -38,6 +35,20 @@ export const handler = async () => {
   } catch (error) {
     console.error("Error checking RSS feed:", error);
   }
+};
+
+const createMessage = (items: Element[], keywords?: string[]): string => {
+  const filteredItems =
+    keywords && keywords.length > 0
+      ? filterItemsByKeywords(items, keywords)
+      : items;
+  return filteredItems
+    .map((item) => {
+      const title = item.querySelector("title")!.textContent;
+      const link = item.querySelector("link")!.textContent;
+      return `${title}\n${link}`;
+    })
+    .join("\n\n");
 };
 
 const calculateTimeRange = (value: number, unit: string): number => {
@@ -53,7 +64,6 @@ const calculateTimeRange = (value: number, unit: string): number => {
   }
 };
 
-// RSS 1.0 と 2.0 で"公開日"の要素名が異なる
 const parsePubDate = (item: Element): Date | null => {
   const dateText =
     item.querySelector("pubDate")?.textContent ||

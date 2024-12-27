@@ -4,10 +4,18 @@ import * as events from "aws-cdk-lib/aws-events";
 import * as targets from "aws-cdk-lib/aws-events-targets";
 import * as sns from "aws-cdk-lib/aws-sns";
 import { Construct } from "constructs";
+import * as dotenv from "dotenv";
 
+dotenv.config();
 export class RssMonitorLambdaStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
+
+    // 設定値をログに出力
+    console.log("RSS_FEED_URL:", process.env.RSS_FEED_URL);
+    console.log("KEYWORDS:", process.env.KEYWORDS);
+    console.log("SCHEDULED_VALUE:", process.env.SCHEDULED_VALUE);
+    console.log("SCHEDULED_UNIT:", process.env.SCHEDULED_UNIT);
 
     const topic = new sns.Topic(this, "RssMonitorTopic");
 
@@ -18,9 +26,10 @@ export class RssMonitorLambdaStack extends cdk.Stack {
       environment: {
         SNS_TOPIC_ARN: topic.topicArn,
         RSS_FEED_URL: process.env.RSS_FEED_URL!,
-        KEYWORDS: process.env.KEYWORDS!,
         SCHEDULED_VALUE: process.env.SCHEDULED_VALUE!,
         SCHEDULED_UNIT: process.env.SCHEDULED_UNIT!,
+        // キーワードはオプショナル
+        ...(process.env.KEYWORDS && { KEYWORDS: process.env.KEYWORDS }),
       },
     });
 
