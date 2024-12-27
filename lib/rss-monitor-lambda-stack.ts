@@ -1,5 +1,5 @@
 import * as cdk from "aws-cdk-lib";
-import * as lambda from "aws-cdk-lib/aws-lambda";
+import * as lambdaNodejs from "aws-cdk-lib/aws-lambda-nodejs";
 import * as events from "aws-cdk-lib/aws-events";
 import * as targets from "aws-cdk-lib/aws-events-targets";
 import * as sns from "aws-cdk-lib/aws-sns";
@@ -19,10 +19,8 @@ export class RssMonitorLambdaStack extends cdk.Stack {
 
     const topic = new sns.Topic(this, "RssMonitorTopic");
 
-    const handler = new lambda.Function(this, "RssMonitorHandler", {
-      runtime: lambda.Runtime.NODEJS_22_X,
-      code: lambda.Code.fromAsset("lambda"),
-      handler: "rss_monitor.handler",
+    const handler = new lambdaNodejs.NodejsFunction(this, "RssMonitorHandler", {
+      entry: "src/lambda/rss-monitor-check-keyword.ts",
       environment: {
         SNS_TOPIC_ARN: topic.topicArn,
         RSS_FEED_URL: process.env.RSS_FEED_URL!,
