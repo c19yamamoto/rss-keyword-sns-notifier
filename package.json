@@ -28,7 +28,7 @@
     "constructs": "^10.4.2",
     "dayjs": "^1.11.13",
     "dotenv": "^16.4.7",
-    "esbuild": "^0.24.2",
+    "esbuild": "^0.25.0",
     "install": "^0.13.0",
     "node-fetch": "^3.3.2",
     "npm": "^10.9.2",
