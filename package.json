@@ -24,7 +24,7 @@
     "@types/date-fns": "^2.5.3",
     "@types/node-fetch": "^2.6.12",
     "@xmldom/xmldom": "^0.9.6",
-    "aws-cdk-lib": "^2.177.0",
+    "aws-cdk-lib": "^2.184.0",
     "constructs": "^10.4.2",
     "dayjs": "^1.11.13",
     "dotenv": "^16.4.7",
